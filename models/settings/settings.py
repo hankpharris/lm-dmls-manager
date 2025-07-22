@@ -1,9 +1,9 @@
 import peewee as pw
-from models.print_settings.feature_settings import (
+from models.settings.feature_settings import (
     HatchUpSkin, HatchInfill, HatchDownSkin, ContourOnPart, ContourStandard, ContourDown, Edge, Core, Support
 )
 
-class Settings(pw.Model):
+class Setting(pw.Model):
     id = pw.AutoField()  # Auto-incrementing primary key
     name = pw.CharField()
     description = pw.CharField()
