@@ -122,4 +122,7 @@ class PowderComposition(pw.Model):
     Fl = pw.FloatField(null=True)
     Lv = pw.FloatField(null=True)
     Ts = pw.FloatField(null=True)
-    Og = pw.FloatField(null=True) 
+    Og = pw.FloatField(null=True)
+
+    class Meta:
+        table_name = 'powder_compositions' 

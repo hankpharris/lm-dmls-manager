@@ -11,12 +11,38 @@ class BaseFeatureSetting(pw.Model):
     class Meta:
         abstract = True
 
-class HatchUpSkin(BaseFeatureSetting): pass
-class HatchInfill(BaseFeatureSetting): pass
-class HatchDownSkin(BaseFeatureSetting): pass
-class ContourOnPart(BaseFeatureSetting): pass
-class ContourStandard(BaseFeatureSetting): pass
-class ContourDown(BaseFeatureSetting): pass
-class Edge(BaseFeatureSetting): pass
-class Core(BaseFeatureSetting): pass
-class Support(BaseFeatureSetting): pass 
+class HatchUpSkin(BaseFeatureSetting):
+    class Meta:
+        table_name = 'hatch_up_skins'
+
+class HatchInfill(BaseFeatureSetting):
+    class Meta:
+        table_name = 'hatch_infills'
+
+class HatchDownSkin(BaseFeatureSetting):
+    class Meta:
+        table_name = 'hatch_down_skins'
+
+class ContourOnPart(BaseFeatureSetting):
+    class Meta:
+        table_name = 'contour_on_parts'
+
+class ContourStandard(BaseFeatureSetting):
+    class Meta:
+        table_name = 'contour_standards'
+
+class ContourDown(BaseFeatureSetting):
+    class Meta:
+        table_name = 'contour_downs'
+
+class Edge(BaseFeatureSetting):
+    class Meta:
+        table_name = 'edges'
+
+class Core(BaseFeatureSetting):
+    class Meta:
+        table_name = 'cores'
+
+class Support(BaseFeatureSetting):
+    class Meta:
+        table_name = 'supports' 

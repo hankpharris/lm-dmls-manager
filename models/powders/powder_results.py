@@ -20,4 +20,7 @@ class PowderResults(pw.Model):
     xcmin90 = pw.IntegerField(null=True)
     perc_wt_gt_53 = pw.FloatField(null=True)
     perc_wt_gt_63 = pw.FloatField(null=True)
-    apparent_dens = pw.FloatField(null=True) 
+    apparent_dens = pw.FloatField(null=True)
+
+    class Meta:
+        table_name = 'powder_results' 

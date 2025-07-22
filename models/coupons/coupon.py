@@ -1,7 +1,7 @@
 import peewee as pw
 from enum import Enum
 
-class PositionEnum(str, Enum):
+class DirectionEnum(str, Enum):
     X = "X"
     Y = "Y"
     Z = "Z"
@@ -18,4 +18,7 @@ class Coupon(pw.Model):
     x_position = pw.FloatField(null=True)
     y_position = pw.FloatField(null=True)
     z_position = pw.FloatField(null=True)
-    position = pw.CharField(choices=[(e.value, e.name) for e in PositionEnum]) 
+    direction = pw.CharField(choices=[(e.value, e.name) for e in DirectionEnum])
+
+    class Meta:
+        table_name = 'coupons' 

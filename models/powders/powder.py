@@ -15,4 +15,4 @@ class Powder(pw.Model):
     quantity = pw.FloatField(null=True)
 
     class Meta:
-        table_name = 'powder' 
+        table_name = 'powders' 

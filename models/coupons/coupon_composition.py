@@ -1,5 +1,5 @@
 import peewee as pw
-from models.coupon.coupon import Coupon
+from models.coupons.coupon import Coupon
 
 class CouponComposition(pw.Model):
     coupon = pw.ForeignKeyField(Coupon, primary_key=True, backref='composition', on_delete='CASCADE')
@@ -118,4 +118,7 @@ class CouponComposition(pw.Model):
     Fl = pw.FloatField(null=True)
     Lv = pw.FloatField(null=True)
     Ts = pw.FloatField(null=True)
-    Og = pw.FloatField(null=True) 
+    Og = pw.FloatField(null=True)
+
+    class Meta:
+        table_name = 'coupon_compositions' 
