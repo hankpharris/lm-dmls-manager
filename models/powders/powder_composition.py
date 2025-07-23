@@ -3,9 +3,10 @@ PowderComposition model for storing elemental percentages
 """
 
 import peewee as pw
+from models.base import BaseModel
 from models.powders.powder import Powder
 
-class PowderComposition(pw.Model):
+class PowderComposition(BaseModel):
     powder = pw.ForeignKeyField(Powder, primary_key=True, backref='composition', on_delete='CASCADE')
     H = pw.FloatField(null=True)
     He = pw.FloatField(null=True)

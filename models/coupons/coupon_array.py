@@ -1,7 +1,8 @@
 import peewee as pw
+from models.base import BaseModel
 from models.coupons.coupon import Coupon
 
-class CouponArray(pw.Model):
+class CouponArray(BaseModel):
     id = pw.AutoField()
     is_preset = pw.BooleanField()
     coupon_1 = pw.ForeignKeyField(Coupon, null=True, backref='coupon_array_1')

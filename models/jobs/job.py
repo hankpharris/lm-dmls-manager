@@ -1,9 +1,10 @@
 from playhouse.sqlite_ext import JSONField
 import peewee as pw
+from models.base import BaseModel
 from models.jobs.work_order import WorkOrder
 from models.builds.build import Build
 
-class Job(pw.Model):
+class Job(BaseModel):
     id = pw.AutoField()
     name = pw.CharField()
     description = pw.CharField()

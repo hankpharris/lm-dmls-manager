@@ -1,7 +1,8 @@
 from playhouse.sqlite_ext import JSONField
 import peewee as pw
+from models.base import BaseModel
 
-class Plate(pw.Model):
+class Plate(BaseModel):
     id = pw.AutoField()
     description = pw.CharField(null=True)
     material = pw.CharField()

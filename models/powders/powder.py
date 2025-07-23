@@ -3,8 +3,9 @@ Powder model for tracking powder material lots and metadata
 """
 
 import peewee as pw
+from models.base import BaseModel
 
-class Powder(pw.Model):
+class Powder(BaseModel):
     id = pw.CharField(primary_key=True, unique=True, max_length=128)  # e.g., <matID>-<manLot>-<subgroup>-<rev>
     init_date_time = pw.DateTimeField(null=True)
     description = pw.CharField(null=True, max_length=255)

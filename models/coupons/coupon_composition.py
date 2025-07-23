@@ -1,7 +1,8 @@
 import peewee as pw
+from models.base import BaseModel
 from models.coupons.coupon import Coupon
 
-class CouponComposition(pw.Model):
+class CouponComposition(BaseModel):
     coupon = pw.ForeignKeyField(Coupon, primary_key=True, backref='composition', on_delete='CASCADE')
     H = pw.FloatField(null=True)
     He = pw.FloatField(null=True)

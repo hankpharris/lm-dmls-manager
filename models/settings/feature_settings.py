@@ -1,6 +1,8 @@
 import peewee as pw
+from database.connection import database
+from models.base import BaseModel
 
-class BaseFeatureSetting(pw.Model):
+class BaseFeatureSetting(BaseModel):
     name = pw.CharField(null=True)
     description = pw.CharField(null=True)
     is_preset = pw.BooleanField(null=True)

@@ -3,9 +3,10 @@ PowderResults model for storing various powder test results
 """
 
 import peewee as pw
+from models.base import BaseModel
 from models.powders.powder import Powder
 
-class PowderResults(pw.Model):
+class PowderResults(BaseModel):
     powder = pw.ForeignKeyField(Powder, primary_key=True, backref='results', on_delete='CASCADE')
     water_content = pw.FloatField(null=True)
     skeletal_density = pw.FloatField(null=True)
