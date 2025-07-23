@@ -13,13 +13,13 @@ class DirectionEnum(str, Enum):
 
 class Coupon(BaseModel):
     id = pw.AutoField()
-    name = pw.CharField()
-    description = pw.CharField()
-    is_preset = pw.BooleanField()
-    x_position = pw.FloatField(null=True)
-    y_position = pw.FloatField(null=True)
-    z_position = pw.FloatField(null=True)
-    direction = pw.CharField(choices=[(e.value, e.name) for e in DirectionEnum])
+    name = pw.CharField(null=True)  # Optional field
+    description = pw.CharField(null=True)  # Optional field
+    is_preset = pw.BooleanField()  # Required field
+    x_position = pw.FloatField()  # Required field
+    y_position = pw.FloatField()  # Required field
+    z_position = pw.FloatField()  # Required field
+    direction = pw.CharField(choices=[(e.value, e.name) for e in DirectionEnum])  # Required field
 
     class Meta:
         table_name = 'coupons' 

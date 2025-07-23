@@ -3,9 +3,6 @@ from database.connection import database
 from models.base import BaseModel
 
 class BaseFeatureSetting(BaseModel):
-    name = pw.CharField(null=True)
-    description = pw.CharField(null=True)
-    is_preset = pw.BooleanField(null=True)
     power = pw.FloatField(null=True)
     scan_speed = pw.FloatField(null=True)
     layer_thick = pw.FloatField(null=True)

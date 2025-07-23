@@ -4,6 +4,8 @@ from models.coupons.coupon import Coupon
 
 class CouponArray(BaseModel):
     id = pw.AutoField()
+    name = pw.CharField(null=True, max_length=255)
+    description = pw.CharField(null=True, max_length=500)
     is_preset = pw.BooleanField()
     coupon_1 = pw.ForeignKeyField(Coupon, null=True, backref='coupon_array_1')
     coupon_2 = pw.ForeignKeyField(Coupon, null=True, backref='coupon_array_2')

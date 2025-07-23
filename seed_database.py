@@ -44,7 +44,7 @@ database.create_tables([
 ], safe=True)
 
 # Create powders
-powder_id = f"316L-[S312328]-1-0-{int(datetime.now().timestamp())}"
+powder_id = "316L-S312328-1-0"
 powder = Powder.create(
     id=powder_id,
     init_date_time=datetime.now(),
@@ -86,15 +86,15 @@ powder_results = PowderResults.create(
 )
 
 # Create feature settings
-hatch_up_skin = HatchUpSkin.create(name="HatchUpSkin", power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float(), is_preset=True)
-hatch_infill = HatchInfill.create(name="HatchInfill", power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float(), is_preset=True)
-hatch_down_skin = HatchDownSkin.create(name="HatchDownSkin", power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float(), is_preset=True)
-contour_on_part = ContourOnPart.create(name="ContourOnPart", power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float(), is_preset=True)
-contour_standard = ContourStandard.create(name="ContourStandard", power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float(), is_preset=True)
-contour_down = ContourDown.create(name="ContourDown", power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float(), is_preset=True)
-edge = Edge.create(name="Edge", power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float(), is_preset=True)
-core = Core.create(name="Core", power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float(), is_preset=True)
-support = Support.create(name="Support", power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float(), is_preset=True)
+hatch_up_skin = HatchUpSkin.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+hatch_infill = HatchInfill.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+hatch_down_skin = HatchDownSkin.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+contour_on_part = ContourOnPart.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+contour_standard = ContourStandard.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+contour_down = ContourDown.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+edge = Edge.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+core = Core.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+support = Support.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
 
 setting = Setting.create(
     name="Default Setting",
@@ -133,9 +133,9 @@ for i in range(1, 6):
         name=f"Coupon {i}",
         description=f"Test coupon {i}",
         is_preset=bool(i % 2),
-        x_position=rand_float(),
-        y_position=rand_float(),
-        z_position=rand_float(),
+        x_position=round(random.uniform(0, 100), 2),
+        y_position=round(random.uniform(0, 100), 2),
+        z_position=round(random.uniform(0, 100), 2),
         direction="X",
         coupon_composition=comp
     )
@@ -144,15 +144,185 @@ for i in range(1, 6):
 
 # Create a coupon array
 coupon_array = CouponArray.create(
+    name="Standard Coupon Array",
+    description="Full 256-coupon array for comprehensive testing",
     is_preset=True,
     **{f"coupon_{i+1}": coupons[i % len(coupons)] for i in range(256)}
 )
 
-# Create a build
-build = Build.create(
+# Create additional powders for variety
+powder2_id = "Ti64-T123456-2-0"
+powder2 = Powder.create(
+    id=powder2_id,
+    init_date_time=datetime.now(),
+    description="Titanium powder batch",
+    mat_id="Ti64",
+    man_lot="T123456",
+    subgroup=2,
+    rev=0,
+    quantity=75.0
+)
+
+powder3_id = "AlSi10Mg-A789012-3-0"
+powder3 = Powder.create(
+    id=powder3_id,
+    init_date_time=datetime.now(),
+    description="Aluminum powder batch",
+    mat_id="AlSi10Mg",
+    man_lot="A789012",
+    subgroup=3,
+    rev=0,
+    quantity=50.0
+)
+
+# Create composition and results for powder2 (Titanium)
+powder2_comp = PowderComposition.create(
+    powder=powder2,
+    Fe=rand_float(),
+    Cr=rand_float(),
+    Ni=rand_float(),
+    Mo=rand_float(),
+    C=rand_float(),
+    Mn=rand_float(),
+    Si=rand_float()
+)
+
+powder2_results = PowderResults.create(
+    powder=powder2,
+    water_content=rand_float(),
+    skeletal_density=rand_float(),
+    sphericity=rand_float(),
+    symmetry=rand_float(),
+    aspect_ratio=rand_float(),
+    d10=rand_int(),
+    d50=rand_int(),
+    d90=rand_int(),
+    xcmin10=rand_int(),
+    xcmin50=rand_int(),
+    xcmin90=rand_int(),
+    perc_wt_gt_53=rand_float(),
+    perc_wt_gt_63=rand_float(),
+    apparent_dens=rand_float()
+)
+
+# Create composition and results for powder3 (Aluminum)
+powder3_comp = PowderComposition.create(
+    powder=powder3,
+    Fe=rand_float(),
+    Cr=rand_float(),
+    Ni=rand_float(),
+    Mo=rand_float(),
+    C=rand_float(),
+    Mn=rand_float(),
+    Si=rand_float()
+)
+
+powder3_results = PowderResults.create(
+    powder=powder3,
+    water_content=rand_float(),
+    skeletal_density=rand_float(),
+    sphericity=rand_float(),
+    symmetry=rand_float(),
+    aspect_ratio=rand_float(),
+    d10=rand_int(),
+    d50=rand_int(),
+    d90=rand_int(),
+    xcmin10=rand_int(),
+    xcmin50=rand_int(),
+    xcmin90=rand_int(),
+    perc_wt_gt_53=rand_float(),
+    perc_wt_gt_63=rand_float(),
+    apparent_dens=rand_float()
+)
+
+# Create additional feature settings for setting2
+hatch_up_skin2 = HatchUpSkin.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+hatch_infill2 = HatchInfill.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+hatch_down_skin2 = HatchDownSkin.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+contour_on_part2 = ContourOnPart.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+contour_standard2 = ContourStandard.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+contour_down2 = ContourDown.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+edge2 = Edge.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+core2 = Core.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+support2 = Support.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+
+# Create additional feature settings for setting3
+hatch_up_skin3 = HatchUpSkin.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+hatch_infill3 = HatchInfill.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+hatch_down_skin3 = HatchDownSkin.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+contour_on_part3 = ContourOnPart.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+contour_standard3 = ContourStandard.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+contour_down3 = ContourDown.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+edge3 = Edge.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+core3 = Core.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+support3 = Support.create(power=rand_float(), scan_speed=rand_float(), layer_thick=rand_float(), hatch_dist=rand_float())
+
+# Create additional settings
+setting2 = Setting.create(
+    name="High Speed Setting",
+    description="High speed production setting",
+    is_preset=True,
+    hatch_up_skin=hatch_up_skin2,
+    hatch_infill=hatch_infill2,
+    hatch_down_skin=hatch_down_skin2,
+    contour_on_part=contour_on_part2,
+    contour_standard=contour_standard2,
+    contour_down=contour_down2,
+    edge=edge2,
+    core=core2,
+    support=support2
+)
+
+setting3 = Setting.create(
+    name="Precision Setting",
+    description="High precision setting for critical parts",
+    is_preset=True,
+    hatch_up_skin=hatch_up_skin3,
+    hatch_infill=hatch_infill3,
+    hatch_down_skin=hatch_down_skin3,
+    contour_on_part=contour_on_part3,
+    contour_standard=contour_standard3,
+    contour_down=contour_down3,
+    edge=edge3,
+    core=core3,
+    support=support3
+)
+
+# Create additional plates
+plate2 = Plate.create(
+    description="Titanium plate",
+    material="Titanium",
+    foreign_keys_list=[],
+    stamped_heights=[(datetime.now().isoformat(), rand_float()) for _ in range(2)]
+)
+
+plate3 = Plate.create(
+    description="Aluminum plate",
+    material="Aluminum",
+    foreign_keys_list=[],
+    stamped_heights=[(datetime.now().isoformat(), rand_float()) for _ in range(4)]
+)
+
+# Create additional coupon arrays
+coupon_array2 = CouponArray.create(
+    name="Medium Coupon Array",
+    description="128-coupon array for medium-scale testing",
+    is_preset=False,
+    **{f"coupon_{i+1}": coupons[i % len(coupons)] for i in range(128)}
+)
+
+coupon_array3 = CouponArray.create(
+    name="Compact Coupon Array",
+    description="64-coupon array for quick testing and validation",
+    is_preset=True,
+    **{f"coupon_{i+1}": coupons[i % len(coupons)] for i in range(64)}
+)
+
+# Create builds
+build1 = Build.create(
     datetime=datetime.now(),
-    name="Test Build",
-    description="A test build",
+    name="Test Build 1",
+    description="A test build with 316L steel",
     powder_weight_required=rand_float(),
     powder_weight_loaded=rand_float(),
     setting=setting,
@@ -161,22 +331,78 @@ build = Build.create(
     coupon_array=coupon_array
 )
 
-# Create a work order
-work_order = WorkOrder.create(
+build2 = Build.create(
+    datetime=datetime.now(),
+    name="Test Build 2",
+    description="A test build with Ti64 titanium",
+    powder_weight_required=rand_float(),
+    powder_weight_loaded=rand_float(),
+    setting=setting2,
+    powder=powder2,
+    plate=plate2,
+    coupon_array=coupon_array2
+)
+
+build3 = Build.create(
+    datetime=datetime.now(),
+    name="Test Build 3",
+    description="A test build with AlSi10Mg aluminum",
+    powder_weight_required=rand_float(),
+    powder_weight_loaded=rand_float(),
+    setting=setting3,
+    powder=powder3,
+    plate=plate3,
+    coupon_array=coupon_array3
+)
+
+# Create work orders
+work_order1 = WorkOrder.create(
     name="Work Order 1",
-    description="Test work order",
+    description="Test work order for steel parts",
     pvid=1,
     parts=[("PartA", 10), ("PartB", 5)],
     parent=None
 )
 
-# Create a job
-job = Job.create(
+work_order2 = WorkOrder.create(
+    name="Work Order 2",
+    description="Test work order for titanium parts",
+    pvid=2,
+    parts=[("PartC", 8), ("PartD", 12)],
+    parent=None
+)
+
+work_order3 = WorkOrder.create(
+    name="Work Order 3",
+    description="Test work order for aluminum parts",
+    pvid=3,
+    parts=[("PartE", 15), ("PartF", 3)],
+    parent=work_order1
+)
+
+# Create jobs
+job1 = Job.create(
     name="Job 1",
-    description="Test job",
+    description="Test job for steel build",
     parts=[("PartA", 10), ("PartB", 5)],
-    work_order=work_order,
-    build=build
+    work_order=work_order1,
+    build=build1
+)
+
+job2 = Job.create(
+    name="Job 2",
+    description="Test job for titanium build",
+    parts=[("PartC", 8), ("PartD", 12)],
+    work_order=work_order2,
+    build=build2
+)
+
+job3 = Job.create(
+    name="Job 3",
+    description="Test job for aluminum build",
+    parts=[("PartE", 15), ("PartF", 3)],
+    work_order=work_order3,
+    build=build3
 )
 
 print("Database seeded with sample data.") 
