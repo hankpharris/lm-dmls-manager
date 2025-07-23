@@ -123,12 +123,6 @@ plate = Plate.create(
 coupon_compositions = []
 coupons = []
 for i in range(1, 6):
-    comp = CouponComposition.create(
-        H=rand_float(),
-        C=rand_float(),
-        O=rand_float(),
-        Fe=rand_float()
-    )
     coupon = Coupon.create(
         name=f"Coupon {i}",
         description=f"Test coupon {i}",
@@ -136,10 +130,18 @@ for i in range(1, 6):
         x_position=round(random.uniform(0, 100), 2),
         y_position=round(random.uniform(0, 100), 2),
         z_position=round(random.uniform(0, 100), 2),
-        direction="X",
-        coupon_composition=comp
+        direction="X"
     )
-    coupon_compositions.append(comp)
+    # Only create composition for some coupons (1, 3, 5) to test the 1-to-0.1 relationship
+    if i % 2 == 1:  # Odd numbered coupons get composition data
+        comp = CouponComposition.create(
+            coupon=coupon,
+            H=rand_float(),
+            C=rand_float(),
+            O=rand_float(),
+            Fe=rand_float()
+        )
+        coupon_compositions.append(comp)
     coupons.append(coupon)
 
 # Create a coupon array

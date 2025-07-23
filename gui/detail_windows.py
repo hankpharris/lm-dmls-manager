@@ -17,6 +17,7 @@ from models.settings.feature_settings import (
 )
 from models.coupons.coupon_array import CouponArray
 from models.coupons.coupon import Coupon
+from models.coupons.coupon_composition import CouponComposition
 
 
 class DetailTableWidget(QTableWidget):
@@ -217,6 +218,95 @@ class SettingDetailWindow(QMainWindow):
             traceback.print_exc()
 
 
+class CouponDetailWindow(QMainWindow):
+    """Window to display detailed coupon information and composition"""
+    def __init__(self, coupon_id):
+        super().__init__()
+        self.coupon_id = coupon_id
+        self.setWindowTitle(f"Coupon Details - ID: {coupon_id}")
+        self.setGeometry(200, 200, 1200, 600)
+        
+        # Create central widget and layout
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        layout = QVBoxLayout(central_widget)
+        
+        # Load coupon details
+        self.load_coupon_details(layout)
+    
+    def load_coupon_details(self, layout):
+        """Load and display coupon information and composition"""
+        try:
+            print(f"Loading coupon details for ID: {self.coupon_id}")
+            coupon = Coupon.get(Coupon.id == self.coupon_id)
+            print(f"Found coupon: {coupon.id} - {coupon.name}")
+            
+            # Coupon info header
+            header_label = QLabel(f"Coupon: {coupon.name}")
+            header_label.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;")
+            layout.addWidget(header_label)
+            
+            desc_label = QLabel(f"Description: {coupon.description}")
+            desc_label.setStyleSheet("margin: 5px;")
+            layout.addWidget(desc_label)
+            
+            # Create table for coupon details
+            details_table = DetailTableWidget()
+            layout.addWidget(QLabel("Coupon Information:"))
+            layout.addWidget(details_table)
+            
+            # Coupon details
+            details_headers = ["Property", "Value"]
+            details_data = [
+                ["Name", coupon.name],
+                ["Description", coupon.description],
+                ["Is Preset", coupon.is_preset],
+                ["X Position", coupon.x_position],
+                ["Y Position", coupon.y_position],
+                ["Z Position", coupon.z_position],
+                ["Direction", coupon.direction]
+            ]
+            details_table.load_data(details_headers, details_data)
+            
+            # Try to load composition if available
+            try:
+                composition = CouponComposition.get(CouponComposition.coupon == coupon)
+                print(f"Found composition for coupon {coupon.id}")
+                
+                # Create table for composition
+                comp_table = DetailTableWidget()
+                layout.addWidget(QLabel("Composition:"))
+                layout.addWidget(comp_table)
+                
+                # Get all non-null composition values
+                comp_data = []
+                for field_name in ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 
+                                  'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca',
+                                  'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn']:
+                    value = getattr(composition, field_name)
+                    if value is not None:
+                        comp_data.append([field_name, f"{value:.2f}%"])
+                
+                if comp_data:
+                    comp_headers = ["Element", "Value (%)"]
+                    comp_table.load_data(comp_headers, comp_data)
+                else:
+                    comp_table.setRowCount(1)
+                    comp_table.setColumnCount(1)
+                    comp_table.setItem(0, 0, QTableWidgetItem("No composition data available"))
+                    
+            except CouponComposition.DoesNotExist:
+                print(f"No composition found for coupon {coupon.id}")
+                no_comp_label = QLabel("No composition data available for this coupon")
+                no_comp_label.setStyleSheet("color: #666; font-style: italic; margin: 10px;")
+                layout.addWidget(no_comp_label)
+            
+        except Exception as e:
+            print(f"Error loading coupon details: {e}")
+            import traceback
+            traceback.print_exc()
+
+
 class CouponArrayDetailWindow(QMainWindow):
     """Window to display detailed coupon array information"""
     def __init__(self, coupon_array_id):
@@ -225,35 +315,49 @@ class CouponArrayDetailWindow(QMainWindow):
         self.setWindowTitle(f"Coupon Array Details - ID: {coupon_array_id}")
         self.setGeometry(200, 200, 1600, 800)
         
+        # Store detail windows to prevent garbage collection
+        self.detail_windows = []
+        
         # Create central widget and layout
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
         
-        # Create tab widget for coupons and compositions
-        from PyQt6.QtWidgets import QTabWidget
-        tab_widget = QTabWidget()
-        layout.addWidget(tab_widget)
-        
-        # Create coupons tab
-        self.create_coupons_tab(tab_widget)
-        
-        # Create compositions tab
-        self.create_compositions_tab(tab_widget)
+        # Load coupon array details
+        self.load_coupon_array_details(layout)
     
-    def create_coupons_tab(self, tab_widget):
-        """Create tab for coupon details"""
-        table = DetailTableWidget()
-        tab_widget.addTab(table, "Coupons")
-        
+    def load_coupon_array_details(self, layout):
+        """Load and display coupon array information with nested coupon details"""
         try:
             coupon_array = CouponArray.get(CouponArray.id == self.coupon_array_id)
             
-            # Collect all non-null coupons
+            # Coupon array info header
+            header_label = QLabel(f"Coupon Array: {coupon_array.name}")
+            header_label.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;")
+            layout.addWidget(header_label)
+            
+            desc_label = QLabel(f"Description: {coupon_array.description}")
+            desc_label.setStyleSheet("margin: 5px;")
+            layout.addWidget(desc_label)
+            
+            # Create table for coupons with details buttons
+            table = QTableWidget()
+            table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+            layout.addWidget(table)
+            
+            # Collect all non-null coupons that have composition data
             coupons_data = []
             for i in range(1, 257):
                 coupon = getattr(coupon_array, f'coupon_{i}', None)
                 if coupon:
+                    # Check if this coupon has composition data
+                    has_composition = False
+                    try:
+                        CouponComposition.get(CouponComposition.coupon == coupon)
+                        has_composition = True
+                    except CouponComposition.DoesNotExist:
+                        has_composition = False
+                    
                     coupons_data.append([
                         i,  # Position
                         coupon.name,
@@ -262,39 +366,83 @@ class CouponArrayDetailWindow(QMainWindow):
                         coupon.y_position,
                         coupon.z_position,
                         coupon.direction,
-                        coupon.is_preset
+                        coupon.is_preset,
+                        coupon.id,  # Store coupon ID for details button
+                        has_composition  # Store whether coupon has composition
                     ])
             
-            headers = ["Position", "Name", "Description", "X Position", "Y Position", "Z Position", "Direction", "Is Preset"]
-            table.load_data(headers, coupons_data)
+            if not coupons_data:
+                table.setRowCount(1)
+                table.setColumnCount(1)
+                table.setItem(0, 0, QTableWidgetItem("No coupons found in this array"))
+                return
+            
+            headers = ["Position", "Name", "Description", "X Position", "Y Position", "Z Position", "Direction", "Is Preset", "Details"]
+            table.setColumnCount(len(headers))
+            table.setHorizontalHeaderLabels(headers)
+            table.setRowCount(len(coupons_data))
+            
+            for row, row_data in enumerate(coupons_data):
+                for col, value in enumerate(row_data[:-2]):  # Exclude the last two columns (coupon ID and has_composition)
+                    table.setItem(row, col, QTableWidgetItem(str(value)))
+                
+                # Only add details button if coupon has composition data
+                if row_data[-1]:  # has_composition is True
+                    # Use styled QLabel instead of QPushButton (same as main.py)
+                    details_label = QLabel("Details")
+                    details_label.setStyleSheet("""
+                        QLabel {
+                            background-color: rgba(0, 60, 100, 0.8);
+                            color: white;
+                            padding: 2px 6px;
+                            border-radius: 2px;
+                            font-size: 10px;
+                            border: 1px solid #666666;
+                            margin: 2px;
+                        }
+                        QLabel:hover {
+                            background-color: rgba(0, 80, 140, 0.9);
+                        }
+                    """)
+                    details_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                    details_label.setCursor(Qt.CursorShape.PointingHandCursor)
+                    
+                    # Make it clickable by handling mouse events
+                    coupon_id = row_data[-2]  # Capture the coupon_id in the current scope
+                    def mousePressEvent(event):
+                        if event.button() == Qt.MouseButton.LeftButton:
+                            self.show_coupon_details(coupon_id)
+                    
+                    details_label.mousePressEvent = mousePressEvent
+                    table.setCellWidget(row, len(headers) - 1, details_label)
+                else:
+                    # Show "No Data" for coupons without composition
+                    no_data_label = QLabel("No Data")
+                    no_data_label.setStyleSheet("""
+                        QLabel {
+                            color: #999;
+                            font-style: italic;
+                            padding: 2px 6px;
+                        }
+                    """)
+                    no_data_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                    table.setCellWidget(row, len(headers) - 1, no_data_label)
+            
+            table.resizeColumnsToContents()
             
         except Exception as e:
-            print(f"Error loading coupon details: {e}")
+            print(f"Error loading coupon array details: {e}")
+            import traceback
+            traceback.print_exc()
     
-    def create_compositions_tab(self, tab_widget):
-        """Create tab for coupon compositions"""
-        table = DetailTableWidget()
-        tab_widget.addTab(table, "Compositions")
-        
+    def show_coupon_details(self, coupon_id):
+        """Open coupon details window"""
         try:
-            coupon_array = CouponArray.get(CouponArray.id == self.coupon_array_id)
-            
-            # Collect all non-null coupon compositions
-            compositions_data = []
-            for i in range(1, 257):
-                coupon = getattr(coupon_array, f'coupon_{i}', None)
-                if coupon:
-                    compositions_data.append([
-                        i,  # Position
-                        coupon.name,
-                        coupon.coupon_composition.H,
-                        coupon.coupon_composition.C,
-                        coupon.coupon_composition.O,
-                        coupon.coupon_composition.Fe
-                    ])
-            
-            headers = ["Position", "Coupon Name", "H (%)", "C (%)", "O (%)", "Fe (%)"]
-            table.load_data(headers, compositions_data)
-            
+            print(f"Opening coupon details for ID: {coupon_id}")
+            coupon_window = CouponDetailWindow(coupon_id)
+            self.detail_windows.append(coupon_window)  # Store reference to prevent garbage collection
+            coupon_window.show()
         except Exception as e:
-            print(f"Error loading composition details: {e}") 
+            print(f"Error showing coupon details: {e}")
+            import traceback
+            traceback.print_exc() 

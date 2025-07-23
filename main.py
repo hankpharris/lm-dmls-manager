@@ -16,7 +16,7 @@ from models.settings.setting import Setting
 from models.powders.powder import Powder
 from models.plates.plate import Plate
 from models.coupons.coupon_array import CouponArray
-from gui.detail_windows import PowderDetailWindow, SettingDetailWindow, CouponArrayDetailWindow
+from gui.detail_windows import PowderDetailWindow, SettingDetailWindow, CouponArrayDetailWindow, CouponDetailWindow
 
 
 
