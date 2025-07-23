@@ -16,4 +16,7 @@ class Setting(pw.Model):
     contour_down = pw.ForeignKeyField(ContourDown, backref='settings')
     edge = pw.ForeignKeyField(Edge, backref='settings')
     core = pw.ForeignKeyField(Core, backref='settings')
-    support = pw.ForeignKeyField(Support, backref='settings') 
+    support = pw.ForeignKeyField(Support, backref='settings')
+
+    class Meta:
+        table_name = 'settings' 

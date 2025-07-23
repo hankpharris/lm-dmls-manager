@@ -1,5 +1,6 @@
 import peewee as pw
 from enum import Enum
+from models.coupons.coupon_composition import CouponComposition
 
 class DirectionEnum(str, Enum):
     X = "X"
@@ -19,6 +20,7 @@ class Coupon(pw.Model):
     y_position = pw.FloatField(null=True)
     z_position = pw.FloatField(null=True)
     direction = pw.CharField(choices=[(e.value, e.name) for e in DirectionEnum])
+    coupon_composition = pw.ForeignKeyField(CouponComposition, null=True, backref='coupons')
 
     class Meta:
         table_name = 'coupons' 
