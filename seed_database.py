@@ -135,15 +135,14 @@ for i in range(1, 257):
         z_position=round(random.uniform(0, 100), 2),
         direction="X"
     )
-    # Only create composition for odd-numbered coupons
-    if i % 2 == 1:
-        CouponComposition.create(
-            coupon=coupon,
-            H=rand_float(),
-            C=rand_float(),
-            O=rand_float(),
-            Fe=rand_float()
-        )
+    # Create composition for all coupons
+    CouponComposition.create(
+        coupon=coupon,
+        H=rand_float(),
+        C=rand_float(),
+        O=rand_float(),
+        Fe=rand_float()
+    )
     coupons.append(coupon)
 
 # Create a coupon array with unique coupons
@@ -379,7 +378,8 @@ part_list_data = {
     "name": "Standard Part List",
     "description": "A part list for demonstration purposes.",
     "is_preset": True,
-    "part_1": parts[0]
+    "part_1": parts[0],
+    "part_2": parts[1]  # Add a second part for testing
 }
 part_list = PartList.create(**part_list_data)
 
