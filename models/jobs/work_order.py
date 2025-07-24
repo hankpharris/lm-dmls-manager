@@ -1,14 +1,13 @@
-from playhouse.sqlite_ext import JSONField
 import peewee as pw
 from models.base import BaseModel
+from models.jobs.part_list import PartList
 
 class WorkOrder(BaseModel):
     id = pw.AutoField()
     name = pw.CharField()
     description = pw.CharField()
     pvid = pw.IntegerField()
-    parts = JSONField(null=True)  # List of (part_model, part_count) tuples (string, int)
-    parent = pw.ForeignKeyField('self', null=True, backref='children')  # Self-referential FK
+    part_list = pw.ForeignKeyField(PartList, null=True, backref='work_orders')
 
     class Meta:
         table_name = 'work_orders' 

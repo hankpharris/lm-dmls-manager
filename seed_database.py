@@ -19,6 +19,8 @@ from models.coupons.coupon_array import CouponArray
 from models.jobs.job import Job
 from models.jobs.work_order import WorkOrder
 from models.builds.build import Build
+from models.jobs.part import Part
+from models.jobs.part_list import PartList
 
 # Helper for random nullable float
 rand_float = lambda: random.choice([round(random.uniform(0, 100), 2), None])
@@ -33,14 +35,16 @@ database.drop_tables([
     Powder, PowderComposition, PowderResults,
     HatchUpSkin, HatchInfill, HatchDownSkin, ContourOnPart, ContourStandard, ContourDown, Edge, Core, Support,
     Setting, Plate, Coupon, CouponComposition, CouponArray,
-    Build, WorkOrder, Job
+    Build, WorkOrder, Job,
+    Part, PartList
 ], safe=True)
 
 database.create_tables([
     Powder, PowderComposition, PowderResults,
     HatchUpSkin, HatchInfill, HatchDownSkin, ContourOnPart, ContourStandard, ContourDown, Edge, Core, Support,
     Setting, Plate, Coupon, CouponComposition, CouponArray,
-    Build, WorkOrder, Job
+    Build, WorkOrder, Job,
+    Part, PartList
 ], safe=True)
 
 # Create powders
@@ -120,9 +124,8 @@ plate = Plate.create(
 )
 
 # Create coupons and coupon compositions
-coupon_compositions = []
 coupons = []
-for i in range(1, 6):
+for i in range(1, 257):
     coupon = Coupon.create(
         name=f"Coupon {i}",
         description=f"Test coupon {i}",
@@ -132,24 +135,23 @@ for i in range(1, 6):
         z_position=round(random.uniform(0, 100), 2),
         direction="X"
     )
-    # Only create composition for some coupons (1, 3, 5) to test the 1-to-0.1 relationship
-    if i % 2 == 1:  # Odd numbered coupons get composition data
-        comp = CouponComposition.create(
+    # Only create composition for odd-numbered coupons
+    if i % 2 == 1:
+        CouponComposition.create(
             coupon=coupon,
             H=rand_float(),
             C=rand_float(),
             O=rand_float(),
             Fe=rand_float()
         )
-        coupon_compositions.append(comp)
     coupons.append(coupon)
 
-# Create a coupon array
+# Create a coupon array with unique coupons
 coupon_array = CouponArray.create(
     name="Standard Coupon Array",
     description="Full 256-coupon array for comprehensive testing",
     is_preset=True,
-    **{f"coupon_{i+1}": coupons[i % len(coupons)] for i in range(256)}
+    **{f"coupon_{i+1}": coupons[i] for i in range(256)}
 )
 
 # Create additional powders for variety
@@ -357,36 +359,57 @@ build3 = Build.create(
     coupon_array=coupon_array3
 )
 
+# After builds are created, add all build IDs to the first plate's foreign_keys_list
+plate.foreign_keys_list = [build1.id, build2.id, build3.id]
+plate.save()
+
+# Create Parts
+parts = []
+for i in range(1, 129):
+    part = Part.create(
+        name=f"Part{i}",
+        description=f"Test part {i}",
+        file_path=f"/path/to/part_{i}.stl",
+        is_complete=bool(i % 2)
+    )
+    parts.append(part)
+
+# Create a PartList with only part_1 set
+part_list_data = {
+    "name": "Standard Part List",
+    "description": "A part list for demonstration purposes.",
+    "is_preset": True,
+    "part_1": parts[0]
+}
+part_list = PartList.create(**part_list_data)
+
 # Create work orders
 work_order1 = WorkOrder.create(
     name="Work Order 1",
     description="Test work order for steel parts",
     pvid=1,
-    parts=[("PartA", 10), ("PartB", 5)],
-    parent=None
+    part_list=part_list
 )
 
 work_order2 = WorkOrder.create(
     name="Work Order 2",
     description="Test work order for titanium parts",
     pvid=2,
-    parts=[("PartC", 8), ("PartD", 12)],
-    parent=None
+    part_list=part_list
 )
 
 work_order3 = WorkOrder.create(
     name="Work Order 3",
     description="Test work order for aluminum parts",
     pvid=3,
-    parts=[("PartE", 15), ("PartF", 3)],
-    parent=work_order1
+    part_list=part_list
 )
 
 # Create jobs
 job1 = Job.create(
     name="Job 1",
     description="Test job for steel build",
-    parts=[("PartA", 10), ("PartB", 5)],
+    part_list=part_list,
     work_order=work_order1,
     build=build1
 )
@@ -394,7 +417,7 @@ job1 = Job.create(
 job2 = Job.create(
     name="Job 2",
     description="Test job for titanium build",
-    parts=[("PartC", 8), ("PartD", 12)],
+    part_list=part_list,
     work_order=work_order2,
     build=build2
 )
@@ -402,7 +425,7 @@ job2 = Job.create(
 job3 = Job.create(
     name="Job 3",
     description="Test job for aluminum build",
-    parts=[("PartE", 15), ("PartF", 3)],
+    part_list=part_list,
     work_order=work_order3,
     build=build3
 )

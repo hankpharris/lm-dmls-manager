@@ -52,7 +52,6 @@ class DatabaseTableWidget(QTableWidget):
             
             # Add details button if requested
             if add_details_column and details_callback:
-                # Use a clickable label instead of a button to avoid state issues
                 details_label = QLabel("Details")
                 details_label.setStyleSheet("""
                     QLabel {
@@ -71,12 +70,13 @@ class DatabaseTableWidget(QTableWidget):
                 details_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 details_label.setCursor(Qt.CursorShape.PointingHandCursor)
                 
-                # Make it clickable by handling mouse events
-                def mousePressEvent(event):
-                    if event.button() == Qt.MouseButton.LeftButton:
-                        details_callback(row)
-                
-                details_label.mousePressEvent = mousePressEvent
+                # Use a function factory to bind the current row
+                def make_mouse_press_event(row):
+                    def mousePressEvent(event):
+                        if event.button() == Qt.MouseButton.LeftButton:
+                            details_callback(row)
+                    return mousePressEvent
+                details_label.mousePressEvent = make_mouse_press_event(row)
                 self.setCellWidget(row, len(row_data), details_label)
         
         self.resizeColumnsToContents()
@@ -152,14 +152,18 @@ class DatabaseViewerWindow(QMainWindow):
         try:
             work_orders = WorkOrder.select()
             if work_orders.exists():
-                headers = ["ID", "Name", "Description", "PVID", "Parts", "Parent ID"]
+                headers = ["ID", "Name", "Description", "PVID", "Part List"]
                 data = []
                 for wo in work_orders:
+                    part_list_id = wo.part_list.id if wo.part_list else 'None'
                     data.append([
                         wo.id, wo.name, wo.description, wo.pvid,
-                        str(wo.parts), wo.parent.id if wo.parent else 'None'
+                        part_list_id
                     ])
-                table.load_data(headers, data)
+                def work_order_details_callback(row):
+                    wo = list(work_orders)[row]
+                    self.show_part_list_details(wo.part_list)
+                table.load_data(headers, data, add_details_column=True, details_callback=work_order_details_callback)
                 print(f"Loaded {len(data)} work orders")
         except Exception as e:
             print(f"Error loading work orders: {e}")
@@ -172,15 +176,19 @@ class DatabaseViewerWindow(QMainWindow):
         try:
             jobs = Job.select()
             if jobs.exists():
-                headers = ["ID", "Name", "Description", "Parts", "Work Order ID", "Build ID"]
+                headers = ["ID", "Name", "Description", "Part List", "Work Order ID", "Build ID"]
                 data = []
                 for job in jobs:
+                    part_list_id = job.part_list.id if job.part_list else 'None'
                     data.append([
-                        job.id, job.name, job.description, str(job.parts),
+                        job.id, job.name, job.description, part_list_id,
                         job.work_order.id if job.work_order else 'None',
                         job.build.id if job.build else 'None'
                     ])
-                table.load_data(headers, data)
+                def job_details_callback(row):
+                    job = list(jobs)[row]
+                    self.show_part_list_details(job.part_list)
+                table.load_data(headers, data, add_details_column=True, details_callback=job_details_callback)
                 print(f"Loaded {len(data)} jobs")
         except Exception as e:
             print(f"Error loading jobs: {e}")
@@ -311,6 +319,53 @@ class DatabaseViewerWindow(QMainWindow):
         except Exception as e:
             print(f"Error showing coupon array details: {e}")
     
+    def show_part_list_details(self, part_list):
+        from PyQt6.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QLabel
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Part List Details")
+        dialog.resize(800, 500)
+        layout = QVBoxLayout(dialog)
+        header_label = QLabel("Part List Details")
+        header_label.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;")
+        layout.addWidget(header_label)
+        if not part_list:
+            layout.addWidget(QLabel("No Part List associated."))
+        else:
+            # Show PartList meta fields
+            name_label = QLabel(f"Name: {part_list.name if part_list.name else ''}")
+            name_label.setStyleSheet("font-size: 14px; margin: 5px 10px 0 10px;")
+            layout.addWidget(name_label)
+            desc_label = QLabel(f"Description: {part_list.description if part_list.description else ''}")
+            desc_label.setStyleSheet("font-size: 13px; margin: 0 10px 5px 10px;")
+            layout.addWidget(desc_label)
+            preset_label = QLabel(f"Preset: {'Yes' if part_list.is_preset else 'No'}")
+            preset_label.setStyleSheet("font-size: 13px; margin: 0 10px 10px 10px;")
+            layout.addWidget(preset_label)
+            # Collect all non-null parts
+            parts = []
+            for i in range(128):
+                part = getattr(part_list, f'part_{i+1}', None)
+                if part:
+                    parts.append(part)
+            if not parts:
+                layout.addWidget(QLabel("No parts in this Part List."))
+            else:
+                table = QTableWidget()
+                table.setColumnCount(5)
+                table.setHorizontalHeaderLabels(["ID", "Name", "Description", "File Path", "Is Complete"])
+                table.setRowCount(len(parts))
+                for row, part in enumerate(parts):
+                    table.setItem(row, 0, QTableWidgetItem(str(part.id)))
+                    table.setItem(row, 1, QTableWidgetItem(str(part.name)))
+                    table.setItem(row, 2, QTableWidgetItem(str(part.description)))
+                    table.setItem(row, 3, QTableWidgetItem(str(part.file_path)))
+                    table.setItem(row, 4, QTableWidgetItem("Yes" if part.is_complete else "No"))
+                table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+                table.resizeColumnsToContents()
+                layout.addWidget(table)
+        dialog.setLayout(layout)
+        dialog.exec()
+
     def on_build_table_double_click(self, row, column):
         """Handle double-click on build table cells"""
         try:
